@@ -1,0 +1,41 @@
+---
+- hosts: "{{ groups['kube-master'][0] }}"
+  any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
+  tasks:
+
+  - name: Copy job definitions
+    copy: 
+      src: job-defs
+      dest: /tmp
+
+  - name: Start Zookeeper
+    shell: /usr/local/bin/kubectl create -f /tmp/job-defs/zookeeper.yaml
+    ignore_errors: yes
+
+  - pause:
+      minutes: 3
+      prompt: "Waiting for Zookeeper to come up ..."  
+
+  - name: Start Bookeeper
+    shell: /usr/local/bin/kubectl create -f /tmp/job-defs/bookie.yaml
+    ignore_errors: yes
+
+  - pause:
+      minutes: 3
+      prompt: "Waiting for Bookeeper to come up ..."  
+
+  - name: Start Heron API Server
+    shell: /usr/local/bin/kubectl create -f /tmp/job-defs/apiserver.yaml
+    ignore_errors: yes
+
+  - name: Start Heron Tools
+    shell: /usr/local/bin/kubectl create -f /tmp/job-defs/tools.yaml
+    ignore_errors: yes
+
+  - name: Start Pulsar
+    shell: /usr/local/bin/kubectl create -f /tmp/job-defs/broker.yaml
+    ignore_errors: yes
+
+  # - name: Start Prometheus and Graphana
+  #   shell: /usr/local/bin/kubectl create -f /tmp/job-defs/monitoring.yaml
+  #   ignore_errors: yes

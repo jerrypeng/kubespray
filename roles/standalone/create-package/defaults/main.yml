@@ -124,6 +124,9 @@ tiller_version: "{{ helm_version }}"
 tiller_image_repo: "gcr.io/kubernetes-helm/tiller"
 tiller_image_tag: "{{ tiller_version }}"
 
+dashboard_image_tag: v1.6.3
+dashboard_image_repo: gcr.io/google_containers/kubernetes-dashboard-amd64
+
 downloads:
   netcheck_server:
     enabled: "{{ deploy_netchecker }}"
@@ -208,7 +211,7 @@ downloads:
     tag: "{{ calico_policy_image_tag }}"
     sha256: "{{ calico_policy_digest_checksum|default(None) }}"
   calico_rr:
-    enabled: "{{ peer_with_calico_rr is defined and peer_with_calico_rr and kube_network_plugin == 'calico' }}"
+    enabled: "{{ peer_with_calico_rr is defined and peer_with_calico_rr}} and kube_network_plugin == 'calico'"
     container: true
     repo: "{{ calico_rr_image_repo }}"
     tag: "{{ calico_rr_image_tag }}"

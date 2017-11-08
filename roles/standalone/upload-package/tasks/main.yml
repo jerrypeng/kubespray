@@ -1,0 +1,219 @@
+## copy files
+- name: copy files
+  copy:
+    src: files
+    dest: /tmp/
+## unzip rpms
+- name: Check rpms.tar.gz exists
+  stat:
+    path: /tmp/files/rpms.tar.gz
+  register: stat_result
+- name: Extract rpms
+  unarchive:
+    src: /tmp/files/rpms.tar.gz
+    dest: /tmp/files/
+    remote_src: yes
+  when: stat_result.stat.exists == True 
+## install repo
+- name: Add offline repo
+  yum_repository:
+    name: offline-streamlio-install-centos-7
+    description: offline install of streamlio platform
+    baseurl: file:///tmp/files/rpms
+    enabled: no
+    gpgcheck: no
+## install docker
+- name: install docker
+  yum:
+    name: docker-engine
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## enable docker
+- name: enable service docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+## install docker-py
+- name: install python-docker
+  yum:
+    name: python-docker-py
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install libselinux-python
+- name: install libselinux-python
+  yum:
+    name: libselinux-python
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install device-mapper-libs
+- name: install device-mapper-libs
+  yum:
+    name: device-mapper
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install ebtables
+- name: install ebtables
+  yum:
+    name: ebtables
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install python-httplib2
+- name: install python-httplib2
+  yum:
+    name: python-httplib2
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install openssl
+- name: install openssl
+  yum:
+    name: openssl
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## install curl
+- name: install curl
+  yum:
+    name: curl
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## rsync
+- name: install rsync
+  yum:
+    name: rsync
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## bash-completion
+- name: install bash-completion
+  yum:
+    name: bash-completion
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## socat
+- name: install socat
+  yum:
+    name: socat
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## unzip
+- name: install unzip
+  yum:
+    name: unzip
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## epel
+- name: install epel
+  yum:
+    name: epel-release
+    state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
+## unzip 
+- name: grab file list
+  shell: find /tmp/files/images -maxdepth 1 -type f -name "*.gz"
+  register: images_files
+- name: Extract images
+  command: gunzip "{{ item }}"
+  with_items: "{{ images_files.stdout_lines }}"
+  when: images_files.stdout != ""
+## load images
+- name: load hyperkube
+  docker_image:
+    name: "{{ hyperkube_image_repo }}"
+    tag: "{{ hyperkube_image_tag }}"
+    load_path: "/tmp/files/images/hyperkube-{{ hyperkube_image_tag }}.tar"
+- name: load flannel_cni
+  docker_image:
+    name: "{{ flannel_cni_image_repo }}"
+    tag: "{{ flannel_cni_image_tag }}"
+    load_path: "/tmp/files/images/flannel_cni-{{ flannel_cni_image_tag }}.tar"
+- name: load flannel
+  docker_image:
+    name: "{{ flannel_image_repo }}"
+    tag: "{{ flannel_image_tag }}"
+    load_path: "/tmp/files/images/flannel-{{ flannel_image_tag }}.tar"
+- name: load etcd
+  docker_image:
+    name: "{{ etcd_image_repo }}"
+    tag: "{{ etcd_image_tag }}"
+    load_path: "/tmp/files/images/etcd-{{ etcd_image_tag }}.tar"
+- name: load dnsmasq_sidecar
+  docker_image:
+    name: "{{ dnsmasq_sidecar_image_repo }}"
+    tag: "{{ dnsmasq_sidecar_image_tag }}"
+    load_path: "/tmp/files/images/dnsmasq_sidecar-{{ dnsmasq_sidecar_image_tag }}.tar"
+- name: load dnsmasq_nanny
+  docker_image:
+    name: "{{ dnsmasq_nanny_image_repo }}"
+    tag: "{{ dnsmasq_nanny_image_tag }}"
+    load_path: "/tmp/files/images/dnsmasq_nanny-{{ dnsmasq_nanny_image_tag }}.tar"
+- name: load kubednsautoscaler
+  docker_image:
+    name: "{{ kubednsautoscaler_image_repo }}"
+    tag: "{{ kubednsautoscaler_image_tag }}"
+    load_path: "/tmp/files/images/kubednsautoscaler-{{ kubednsautoscaler_image_tag }}.tar"
+- name: load nginx
+  docker_image:
+    name: "{{ nginx_image_repo }}"
+    tag: "{{ nginx_image_tag }}"
+    load_path: "/tmp/files/images/nginx-{{ nginx_image_tag }}.tar"
+- name: load pod_infra
+  docker_image:
+    name: "{{ pod_infra_image_repo }}"
+    tag: "{{ pod_infra_image_tag }}"
+    load_path: "/tmp/files/images/pod_infra-{{ pod_infra_image_tag }}.tar"
+- name: load pod_infra
+  docker_image:
+    name: "{{ pod_infra_image_repo }}"
+    tag: "{{ pod_infra_image_tag }}"
+    load_path: "/tmp/files/images/pod_infra-{{ pod_infra_image_tag }}.tar"
+- name: load kubedns
+  docker_image:
+    name: "{{ kubedns_image_repo }}"
+    tag: "{{ kubedns_image_tag }}"
+    load_path: "/tmp/files/images/kubedns-{{ kubedns_image_tag }}.tar"
+- name: load kubernetesdashboard
+  docker_image:
+    name: "{{ dashboard_image_repo }}"
+    tag: "{{ dashboard_image_tag }}"
+    load_path: "/tmp/files/images/kubernetesdashboard-{{ dashboard_image_tag }}.tar"
+- name: load busybox
+  docker_image:
+    name: "{{ test_image_repo }}"
+    tag: "{{ test_image_tag }}"
+    load_path: "/tmp/files/images/busybox-{{ test_image_tag }}.tar"
+    
+## streamlio images
+- name: load streamlio image
+  docker_image:
+    name: streamlio/streamlio
+    tag: 0.1
+    load_path: "/tmp/files/images/streamlio-0.1.tar"
+- name: load streamlio/kubectl:1.7.5
+  docker_image:
+    name: streamlio/kubectl
+    tag: 1.7.5
+    load_path: "/tmp/files/images/streamlio-kubectl-1.7.5.tar"
+- name: load prometheus
+  docker_image:
+    name: prom/prometheus
+    tag: v1.7.1
+    load_path: "/tmp/files/images/prometheus-v1.7.1.tar"
+- name: load grafana
+  docker_image:
+    name: streamlio/grafana
+    tag: 4.5.2
+    load_path: "/tmp/files/images/grafana-4.5.2.tar"
+
+

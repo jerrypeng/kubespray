@@ -1,0 +1,190 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  # Include prometheus configuration file, setup to monitor all the
+  # Kubernetes pods the the "scrape=true" annotation.
+  prometheus.yml: |
+    global:
+        scrape_interval: 30s
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_label_component]
+            action: replace
+            target_label: job
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+---
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+    name: prometheus
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: heron
+        component: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v1.7.1
+          imagePullPolicy: Never
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+            - name: data-volume
+              mountPath: /prometheus
+          ports:
+            - containerPort: 9090
+      volumes:
+        - name: config-volume
+          configMap:
+              name: prometheus-config
+        - name: data-volume
+          emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  labels:
+    app: heron
+    component: prometheus
+spec:
+  ports:
+    - port: 9090
+      name: server
+  clusterIP: None
+  selector:
+      app: heron
+      component: prometheus
+
+
+
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+    component: core
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: core
+    spec:
+      containers:
+        - image: streamlio/grafana:4.5.2
+          imagePullPolicy: Never
+          name: grafana
+          # env:
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          env:
+            # This variable is required to setup templates in Grafana.
+              # The following env variables are required to make Grafana accessible via
+              # the kubernetes api-server proxy. On production clusters, we recommend
+              # removing these env variables, setup auth for grafana, and expose the grafana
+              # service using a LoadBalancer or a public IP.
+            - name: PROMETHEUS_URL
+              value: http://prometheus:9090
+            - name: GF_AUTH_BASIC_ENABLED
+              value: "false"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: Admin
+            #- name: GF_SERVER_ROOT_URL
+            #  value: /api/v1/proxy/namespaces/default/services/grafana:3000
+          volumeMounts:
+          - name: grafana-persistent-storage
+            mountPath: /var
+      volumes:
+      - name: grafana-persistent-storage
+        emptyDir: {}
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+    component: core
+  # annotations:
+  #   prometheus.io/scrape: 'true'
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+    component: core
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  

@@ -1,0 +1,113 @@
+# create a directory if it doesn't exist
+- file:
+    path: files/images
+    state: directory
+    mode: 0755
+## Kubernetes images
+- name: archive busybox
+  docker_image:
+    state: present
+    name: "{{ test_image_repo }}"
+    tag: "{{ test_image_tag }}"
+    archive_path: "files/images/busybox-{{ test_image_tag }}.tar"
+- name: archive hyperkube
+  docker_image:
+    state: present
+    name: "{{ hyperkube_image_repo }}"
+    tag: "{{ hyperkube_image_tag }}"
+    archive_path: "files/images/hyperkube-{{ hyperkube_image_tag }}.tar"
+- name: archive flannel_cni
+  docker_image:
+    state: present
+    name: "{{ flannel_cni_image_repo }}"
+    tag: "{{ flannel_cni_image_tag }}"
+    archive_path: "files/images/flannel_cni-{{ flannel_cni_image_tag }}.tar"
+- name: archive flannel
+  docker_image:
+    state: present
+    name: "{{ flannel_image_repo }}"
+    tag: "{{ flannel_image_tag }}"
+    archive_path: "files/images/flannel-{{ flannel_image_tag }}.tar"
+- name: archive etcd
+  docker_image:
+    state: present
+    name: "{{ etcd_image_repo }}"
+    tag: "{{ etcd_image_tag }}"
+    archive_path: "files/images/etcd-{{ etcd_image_tag }}.tar"
+- name: archive dnsmasq_sidecar
+  docker_image:
+    state: present
+    name: "{{ dnsmasq_sidecar_image_repo }}"
+    tag: "{{ dnsmasq_sidecar_image_tag }}"
+    archive_path: "files/images/dnsmasq_sidecar-{{ dnsmasq_sidecar_image_tag }}.tar"
+- name: archive dnsmasq_nanny
+  docker_image:
+    state: present
+    name: "{{ dnsmasq_nanny_image_repo }}"
+    tag: "{{ dnsmasq_nanny_image_tag }}"
+    archive_path: "files/images/dnsmasq_nanny-{{ dnsmasq_nanny_image_tag }}.tar"
+- name: archive kubednsautoscaler
+  docker_image:
+    state: present
+    name: "{{ kubednsautoscaler_image_repo }}"
+    tag: "{{ kubednsautoscaler_image_tag }}"
+    archive_path: "files/images/kubednsautoscaler-{{ kubednsautoscaler_image_tag }}.tar"
+- name: archive nginx
+  docker_image:
+    state: present
+    name: "{{ nginx_image_repo }}"
+    tag: "{{ nginx_image_tag }}"
+    archive_path: "files/images/nginx-{{ nginx_image_tag }}.tar"
+- name: archive pod_infra
+  docker_image:
+    state: present
+    name: "{{ pod_infra_image_repo }}"
+    tag: "{{ pod_infra_image_tag }}"
+    archive_path: "files/images/pod_infra-{{ pod_infra_image_tag }}.tar"
+- name: archive kubedns
+  docker_image:
+    state: present
+    name: "{{ kubedns_image_repo }}"
+    tag: "{{ kubedns_image_tag }}"
+    archive_path: "files/images/kubedns-{{ kubedns_image_tag }}.tar"
+- name: archive kubernetesdashboard
+  docker_image:
+    state: present
+    name: "{{ dashboard_image_repo }}"
+    tag: "{{ dashboard_image_tag }}"
+    archive_path: "files/images/kubernetesdashboard-{{ dashboard_image_tag }}.tar"
+## Heron images
+- name: archive streamlio image
+  docker_image:
+    state: present
+    name: streamlio/streamlio
+    tag: 0.1
+    archive_path: "files/images/streamlio-0.1.tar"
+- name: archive kubectl
+  docker_image:
+    state: present
+    name: streamlio/kubectl
+    tag: 1.7.5
+    archive_path: "files/images/streamlio-kubectl-1.7.5.tar"
+- name: archive prometheus
+  docker_image:
+    state: present
+    name: prom/prometheus
+    tag: v1.7.1
+    archive_path: "files/images/prometheus-v1.7.1.tar"
+- name: archive grafana
+  docker_image:
+    state: present
+    name: streamlio/grafana
+    tag: 4.5.2
+    archive_path: "files/images/grafana-4.5.2.tar"
+# compress
+- name: Compress images
+  archive:
+    path: "{{ item }}"
+    remove: True
+  with_fileglob:
+    - "files/images/*"
+
+
+
