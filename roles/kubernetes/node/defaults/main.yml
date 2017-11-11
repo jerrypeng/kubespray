@@ -26,7 +26,7 @@ kubelet_enforce_node_allocatable: "\"\""
 kubelet_disable_shared_pid: true
 
 ### fail with swap on (default true)
-kubelet_fail_swap_on: true
+kubelet_fail_swap_on: false
 
 # Reserve this space for system resources
 kubelet_memory_limit: 256M

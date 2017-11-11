@@ -20,7 +20,7 @@
     name: offline-streamlio-install-centos-7
     description: offline install of streamlio platform
     baseurl: file:///tmp/files/rpms
-    enabled: no
+    enabled: yes
     gpgcheck: no
 ## install docker
 - name: install docker

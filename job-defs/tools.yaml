@@ -38,6 +38,7 @@ spec:
           args:
             - >-
               heron-ui
+              --base_url=/api/v1/proxy/namespaces/default/services/heron-ui:8889
 
 ---
 

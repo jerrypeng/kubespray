@@ -10,3 +10,5 @@ sudo yum install --downloadonly --installroot=/var/tmp/streamlio --releasever=7 
 sudo yum install --downloadonly --installroot=/var/tmp/streamlio --releasever=7 --downloaddir=rpms --nogpgcheck socat
 sudo yum install --downloadonly --installroot=/var/tmp/streamlio --releasever=7 --downloaddir=rpms --nogpgcheck unzip
 sudo yum install --downloadonly --installroot=/var/tmp/streamlio --releasever=7 --downloaddir=rpms --nogpgcheck epel-release
+sudo yum install --downloadonly --installroot=/var/tmp/streamlio --releasever=7 --downloaddir=rpms --nogpgcheck ebtables
+sudo createrepo --database rpms

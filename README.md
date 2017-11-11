@@ -69,3 +69,15 @@ This might take a while to run.
 2. Upload dependencies and setup local yum repo 
     - upload all the docker images and rpms to nodes.  Setup local yum repo that point to the rpms. 
 3. Run deploy cluster script
+
+# If kube-dns crashes
+
+sysctl net.ipv4.conf.all.forwarding=1
+iptables -P FORWARD ACCEPT
+systemctl stop kubelet
+systemctl stop docker
+iptables --flush
+iptables -tnat --flush
+systemctl start kubelet
+systemctl start docker
+
