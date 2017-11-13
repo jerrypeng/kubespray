@@ -54,7 +54,37 @@ This might take a while to run.
     Example:
         
         ansible-playbook -i inventory/inventory.cfg heron-deploy.yml --private-key=~/.ssh/id_rsa -u jerrypeng -vvv
+
+## Running Heron Topologies on Kubernetes
+
+After you have followed the previous instruction on install a kubernetes cluster and have start the neccessary components on kubernetes for Heron to run, please to the following:
+
+1. Install Heron CLI on the node that you wish to submit Heron topologies from.  You must also have your topology JARS on this node as well
+2. SSH to a master node and run 'kubectl proxy'
+3. Setup port forwording for port 8001 on the master node to port 8001 on localhost.  This can be done with the following command:
+
+        ssh -L 8001:localhost:8001 <USER>@<MASTER_NODE>
+4. Submit topology to K8s cluster
+
+        heron submit --service-url=http://localhost:8001/api/v1/proxy/namespaces/default/services/heron-apiserver:9000 --verbose kubernetes <TOPOLOGY_JAR_PATH> <TOPOLOGY_CLASSPATH> <NAME>
         
+    For example:
+        
+        heron submit --service-url=http://localhost:8001/api/v1/proxy/namespaces/default/services/heron-apiserver:9000 --verbose kubernetes ~/workspace/heron/bazel-bin/examples/src/java/api-examples-unshaded_deploy.jar com.twitter.heron.examples.api.AckingTopology test-3
+        
+## Dashboards and Heron UI
+
+After you have followed the previous instruction on install a kubernetes cluster and have start the neccessary components on kubernetes for Heron to run, please setup proxy on the master node as described above with the command "kubectl proxy".  Then you can access the kubernetes dashboard and Heron UI via the following URLs:
+
+Kubernetes Dashboard URL:
+
+http://127.0.0.1:8001/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+
+
+Heron UI URL:
+
+http://127.0.0.1:8001/api/v1/proxy/namespaces/default/services/heron-ui:8889
+
 # How it works
 
 1. Package up all dependencies
