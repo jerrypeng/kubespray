@@ -72,7 +72,7 @@
   when: (secret_changed|default(false) or etcd_secret_changed|default(false) or needs_etcd_migration|bool) and kube_apiserver_manifest.stat.exists
 
 - name: "Pre-upgrade | Delete master containers forcefully on all kube-masters"
-  shell: "docker ps -f name=k8s-{{item}}* -q | xargs --no-run-if-empty docker rm -f"
+  shell: "docker ps -f name=k8s_{{item[1]}}* -q | xargs --no-run-if-empty docker rm -f"
   delegate_to: "{{item[0]}}"
   with_nested:
     - "{{groups['kube-master']}}"

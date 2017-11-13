@@ -104,6 +104,9 @@ tiller_version: "{{ helm_version }}"
 tiller_image_repo: "gcr.io/kubernetes-helm/tiller"
 tiller_image_tag: "{{ tiller_version }}"
 
+dashboard_image_tag: v1.6.3
+dashboard_image_repo: gcr.io/google_containers/kubernetes-dashboard-amd64
+
 downloads:
   netcheck_server:
     container: true

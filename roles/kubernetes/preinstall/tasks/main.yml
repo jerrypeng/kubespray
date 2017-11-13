@@ -93,6 +93,8 @@
   yum:
     update_cache: yes
     name: '*'
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
   register: yum_task_result
   until: yum_task_result|succeeded
   retries: 4
@@ -142,6 +144,8 @@
     module: "{{ ansible_pkg_mgr }}"
     name: "{{ item }}"
     state: latest
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
   register: pkgs_task_result
   until: pkgs_task_result|succeeded
   retries: 4

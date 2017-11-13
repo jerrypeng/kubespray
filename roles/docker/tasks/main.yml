@@ -60,6 +60,8 @@
     pkg: "{{item.name}}"
     force: "{{item.force|default(omit)}}"
     state: present
+    disablerepo: "*"
+    enablerepo: offline-streamlio-install-centos-7
   register: docker_task_result
   until: docker_task_result|succeeded
   retries: 4
@@ -85,3 +87,20 @@
     state: started
   with_items:
     - docker
+
+# load images
+- name: grab file list
+  shell: find /tmp/files/images -maxdepth 1 -type f -name "*.gz"
+  register: images_files
+- name: Extract images
+  command: gunzip "{{ item }}"
+  with_items: "{{ images_files.stdout_lines }}"
+  when: images_files.stdout != ""
+
+- name: grab image list
+  shell: find /tmp/files/images -maxdepth 1 -type f -name "*.tar"
+  register: images_files_tar
+- name: Load images
+  command: "{{ docker_bin_dir }}/docker load --input {{item}} "
+  with_items: "{{ images_files_tar.stdout_lines }}"
+  when: images_files_tar.stdout != ""
