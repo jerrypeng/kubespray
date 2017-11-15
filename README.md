@@ -34,20 +34,8 @@ This might take a while to run.
         ansible-playbook -i inventory/inventory.cfg cluster.yml --become --private-key=~/.ssh/id_rsa -u jerrypeng -vvv
         
 4. Wait for scripts to run to completion.
-5. Go to the UI. SSH into one of the nodes and run:
 
-        kubectl describe pod kubernetes-dashboard --namespace=kube-system
-    Look for "Node" field this will tell you what node the Kubernetes UI is scheduled on.
-    
-    Run:
-    
-        kubectl describe service kubernetes-dashboard --namespace=kube-system
-        
-    Look for the "NodePort" field. This will tell you what port the UI is using
-    
-    Now you have the node and port that the UI is running on
-
-6.  To deploy Streamlio/Heron related components to Kubernetes Cluster
+5.  To deploy Streamlio/Heron related components to Kubernetes Cluster
  
         ansible-playbook -i inventory/inventory.cfg heron-deploy.yml --private-key=<PRIVATE_KEY> -u <SSH_USER> -vvv
 
