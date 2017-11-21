@@ -19,14 +19,14 @@
       - timeout:2
       - attempts:2
 
-- name: add upstream dns servers (only when dnsmasq is not used)
-  set_fact:
-    docker_dns_servers: "{{ docker_dns_servers + upstream_dns_servers|default([]) }}"
-  when: dns_mode == 'kubedns'
+# - name: add upstream dns servers (only when dnsmasq is not used)
+#   set_fact:
+#     docker_dns_servers: "{{ docker_dns_servers + upstream_dns_servers|default([]) }}"
+#   when: dns_mode == 'kubedns'
 
-- name: add global searchdomains
-  set_fact:
-    docker_dns_search_domains: "{{ docker_dns_search_domains + searchdomains|default([]) }}"
+# - name: add global searchdomains
+#   set_fact:
+#     docker_dns_search_domains: "{{ docker_dns_search_domains + searchdomains|default([]) }}"
 
 - name: check system nameservers
   shell: grep "^nameserver" /etc/resolv.conf | sed 's/^nameserver\s*//'
@@ -40,15 +40,15 @@
   register: system_search_domains
   check_mode: no
 
-- name: add system nameservers to docker options
-  set_fact:
-    docker_dns_servers: "{{ docker_dns_servers | union(system_nameservers.stdout_lines) | unique }}"
-  when: system_nameservers.stdout != ""
+# - name: add system nameservers to docker options
+#   set_fact:
+#     docker_dns_servers: "{{ docker_dns_servers | union(system_nameservers.stdout_lines) | unique }}"
+#   when: system_nameservers.stdout != ""
 
-- name: add system search domains to docker options
-  set_fact:
-    docker_dns_search_domains: "{{ docker_dns_search_domains | union(system_search_domains.stdout.split(' ')|default([])) | unique }}"
-  when: system_search_domains.stdout != ""
+# - name: add system search domains to docker options
+#   set_fact:
+#     docker_dns_search_domains: "{{ docker_dns_search_domains | union(system_search_domains.stdout.split(' ')|default([])) | unique }}"
+#   when: system_search_domains.stdout != ""
 
 - name: check number of nameservers
   fail:

@@ -17,17 +17,17 @@ This directory contains scripts to deploy a Kubernetes cluster
 1. Update inventory/inventory to have to correct nodes and roles for the cluster
 2. Run package uploader script to load and install all images and rpm dependencies
         
-        ansible-playbook -i inventory/inventory.cfg upload_standalone_packages.yml --become --become-method=sudo --private-key=<PRIVATE_KEY> -u <SSH_USER> -vvv
+        ansible-playbook -i inventory/inventory.cfg upload_standalone_packages.yml --become --become-method=sudo --private-key=<PRIVATE_KEY> -u <SSH_USER> -vvv --extra-vars "ansible_sudo_pass=<PASSWORD>"
 
     Example:
     
-        ansible-playbook -i inventory/inventory.cfg upload_standalone_packages.yml --become --become-method=sudo --private-key=~/.ssh/id_rsa -u jerrypeng -vvv
+        ansible-playbook -i inventory/inventory.cfg upload_standalone_packages.yml --become --become-method=sudo --private-key=~/.ssh/id_rsa -u jerrypeng -vvv --extra-vars "ansible_sudo_pass=<PASSWORD>"
 
 This might take a while to run.
 
 3. Run deployment script to deploy a Kubernetes Cluster
 
-        ansible-playbook -i inventory/inventory.cfg cluster.yml --become --private-key=<PRIVATE_KEY> -u <SSH_USER> -vvv
+        ansible-playbook -i inventory/inventory.cfg cluster.yml --become --private-key=<PRIVATE_KEY> -u <SSH_USER> -vvv --extra-vars "ansible_sudo_pass=<PASSWORD>"
         
     Example:
 
@@ -73,6 +73,10 @@ Heron UI URL:
 
 http://127.0.0.1:8001/api/v1/proxy/namespaces/default/services/heron-ui:8889
 
+# Install and configure Kubectl on other nodes
+
+ansible-playbook -i inventory/inventory.cfg setup_local_kubectl.yml --become --private-key=~/.ssh/id_rsa -u root -vvv
+
 # How it works
 
 1. Package up all dependencies
@@ -98,4 +102,47 @@ iptables --flush
 iptables -tnat --flush
 systemctl start docker
 systemctl start kubelet
+
+ansible-playbook -i inventory/inventory.cfg reset.yml --become --private-key=<PRIVATE_KEY> -u <USER> -vvv --extra-vars "ansible_sudo_pass=<PASSWORD>"
+
+
+[node1/master]
+kubectl drain --force --ignore-daemonsets --delete-local-data jerry-2
+kubectl delete node jerry-2
+kubectl drain --force --ignore-daemonsets --delete-local-data jerry-1
+kubectl delete node jerry-1
+
+systemctl stop kubelet
+systemctl stop docker
+
+rm -rf /var/lib/kubelet/
+rm -rf /var/lib/dnsmasq/
+rm -rf /var/lib/docker
+rm -rf /var/lib/etcd/
+rm -rf /etc/kubernetes/
+
+rm -rf /etc/systemd/system/docker.service*
+rm -rf /etc/systemd/system/kubelet.service
+rm -rf /etc/systemd/system/etcd.service
+
+yum remove docker-engine-1.13.1-1.el7.centos.x86_64
+yum remove docker-engine-selinux-17.05.0.ce-1.el7.centos.noarch
+rm /usr/local/bin/kubectl
+
+
+[Node2]
+systemctl stop kubelet
+systemctl stop docker
+rm -rf /var/lib/kubelet/
+rm -rf /var/lib/dnsmasq/
+rm -rf /var/lib/docker
+rm -rf /var/lib/etcd/
+rm -rf /etc/kubernetes/
+
+rm -rf /etc/systemd/system/docker.service*
+rm -rf /etc/systemd/system/kubelet.service
+rm -rf /etc/systemd/system/etcd.service
+
+yum remove docker-engine-1.13.1-1.el7.centos.x86_64
+yum remove docker-engine-selinux-17.05.0.ce-1.el7.centos.noarch
 
